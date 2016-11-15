@@ -27,12 +27,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageButton callB,messageB;
     TextView plB;
     ListView listview;
-    ArrayList<String> arraylist;
+
     SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
-    ArrayAdapter adapter;
+
+    ChatAdapter chatAdapter;
 
     EditText moneyKey,pmKey;
+
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,24 +50,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setDefault() {
+        //texts
+        pmKey=(EditText)findViewById(R.id.pmText);
+        moneyKey=(EditText)findViewById(R.id.moneyText);
+
+        //buttons
         callB = (ImageButton)findViewById(R.id.callButton);
         messageB=(ImageButton)findViewById(R.id.messageButton);
         plB = (TextView) findViewById(R.id.pluseText);
-
         callB.setOnClickListener(this);
         messageB.setOnClickListener(this);
         plB.setOnClickListener(this);
 
-        arraylist=new ArrayList<>();
-        adapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, arraylist);
+        //listview
         listview=(ListView)findViewById(R.id.moneyList);
 
-        sharedPreferences = getSharedPreferences("WOW",MODE_PRIVATE);
-        editor = sharedPreferences.edit();
-        listview.setAdapter(adapter);
+        //DB
+        sharedPreferences = getSharedPreferences("pref",MODE_PRIVATE);
 
-        pmKey=(EditText)findViewById(R.id.pmText);
-        moneyKey=(EditText)findViewById(R.id.moneyText);
+        chatAdapter = new ChatAdapter(MainActivity.this,R.layout.customlist);
+
+        listview.setAdapter(chatAdapter);
+
+        editor = sharedPreferences.edit();
+        // Editor 초기화 /  SharedPreferences 함수로
+
     }
 
     @Override
@@ -120,18 +129,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void savetoDB(){
         String moneyString=moneyKey.getText().toString().trim();
         String pmString=pmKey.getText().toString().trim();
-        String lastString=pmString+moneyString;
 
         if (moneyString.equals("") || pmString.equals("")) {
             Toast.makeText(this, "공백없이 입력해주세요!", Toast.LENGTH_SHORT).show();
         }
         else {
-            editor.putString(pmString, moneyString);
-            editor.commit();
-            arraylist.add(lastString);
-            adapter.notifyDataSetChanged();
+            model model = new model();
+            model.setPluseminus(pmString);
+            model.setMuchmoney(moneyString);
+
+            chatAdapter.add(model);
+
             pmKey.setText("");
             moneyKey.setText("");
+
             Toast.makeText(this, pmString + " "+ moneyString + " 저장되었습니다", Toast.LENGTH_SHORT).show();
         }
     }
